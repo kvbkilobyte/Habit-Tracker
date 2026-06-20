@@ -1,0 +1,636 @@
+/* ================================================================
+   HABT — style.css
+   Design tokens → Layout → Components → States → Animations
+   ================================================================ */
+
+/* ── Design tokens (CSS custom properties) ────────────────────────
+   Change a value here and it updates everywhere in the file.
+   ---------------------------------------------------------------- */
+:root {
+  /* Palette: deep slate background, warm off-white surface, indigo accent */
+  --bg:           #0f1117;   /* page background — deep navy-slate          */
+  --surface:      #181c27;   /* sidebar + card surfaces                    */
+  --surface-2:    #1e2333;   /* slightly lighter surface (hover, inputs)   */
+  --border:       #272d3f;   /* subtle border / divider                    */
+  --border-light: #2e3550;   /* lighter border for focus rings             */
+
+  --accent:       #7c6ff7;   /* indigo-violet — primary CTA + accents      */
+  --accent-dim:   #3b3470;   /* muted accent for hover backgrounds         */
+  --accent-text:  #a89ef9;   /* accent used on dark backgrounds as text    */
+
+  --success:      #34d399;   /* emerald green — habit done / streak        */
+  --success-bg:   #0d2e24;   /* very dark green for done habit card bg     */
+  --success-dim:  #133b2e;   /* border on done card                        */
+  --fail:         #f87171;   /* soft red — missed day                      */
+  --fail-bg:      #2d1515;
+
+  --text-primary:   #e8eaf2; /* main body text                             */
+  --text-secondary: #8892a8; /* labels, placeholders, secondary copy       */
+  --text-muted:     #4d566b; /* very faint text (borders, empty states)    */
+
+  /* Typography */
+  --font-display: 'DM Sans', sans-serif;
+  --font-body:    'Inter', sans-serif;
+
+  /* Spacing scale */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* Radii */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* ── Reset ──────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Page layout: sidebar + main ───────────────────────────────── */
+.page {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────── */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: var(--sp-8) var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Brand lockup */
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-2);
+}
+
+.brand-mark {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+}
+
+/* Streak widget */
+.streak-widget {
+  background: linear-gradient(135deg, #1e1a3a 0%, #2a1f4a 100%);
+  border: 1px solid #3d3470;
+  border-radius: var(--radius-lg);
+  padding: var(--sp-5) var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.streak-flame {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.streak-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.streak-number {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--accent-text);
+  line-height: 1;
+  /* The signature element: number pops against the dark panel */
+}
+
+.streak-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+/* Today progress widget */
+.today-widget {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.widget-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.progress-bar-track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;                       /* JS sets this */
+  background: var(--success);
+  border-radius: 99px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* ── Main content ───────────────────────────────────────────────── */
+.main {
+  flex: 1;
+  padding: var(--sp-10) var(--sp-12);
+  max-width: 680px;               /* comfortable reading width */
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+/* Page header */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+}
+
+.page-date {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: var(--sp-1);
+}
+
+/* ── Add habit input row ────────────────────────────────────────── */
+.add-habit-row {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+}
+
+/* Wrapper positions the SVG icon inside the input */
+.input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+/* Nudge icon color when input is focused */
+.input-wrapper:focus-within .input-icon {
+  color: var(--accent);
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 12px 14px 12px 40px;   /* left padding makes room for the icon */
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-wrapper input::placeholder {
+  color: var(--text-muted);
+}
+
+.input-wrapper input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124, 111, 247, 0.18);
+}
+
+/* Primary button */
+.btn-primary {
+  padding: 12px 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+  box-shadow: 0 2px 8px rgba(124, 111, 247, 0.35);
+}
+
+.btn-primary:hover {
+  background: #9183f9;
+  box-shadow: 0 4px 14px rgba(124, 111, 247, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Error message */
+.error-msg {
+  font-size: 0.82rem;
+  color: var(--fail);
+  margin-top: -var(--sp-4);       /* pull it up closer to the input */
+  padding-left: 4px;
+}
+
+/* !important ensures .hidden always wins, even when another rule
+   (e.g. .empty-state { display: flex }) appears later in the file. */
+.hidden { display: none !important; }
+
+/* ── Habit list ─────────────────────────────────────────────────── */
+.habit-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/* Each habit card */
+.habit-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+  animation: slideIn 0.22s ease both;
+}
+
+.habit-item:hover {
+  border-color: var(--border-light);
+  background: var(--surface-2);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+/* Done state */
+.habit-item.done {
+  background: var(--success-bg);
+  border-color: var(--success-dim);
+}
+
+/* Custom checkbox: hide the native one, show a styled div */
+.habit-item input[type="checkbox"] {
+  display: none;     /* hidden — we use .custom-check instead */
+}
+
+.custom-check {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  border: 2px solid var(--border-light);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, background 0.2s;
+  pointer-events: none;    /* clicks pass through to the <li> */
+}
+
+/* The checkmark SVG inside .custom-check */
+.custom-check svg {
+  width: 12px;
+  height: 12px;
+  stroke: #fff;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.18s, transform 0.18s;
+}
+
+/* When the habit is done, fill the box and show the tick */
+.habit-item.done .custom-check {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.habit-item.done .custom-check svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Habit label text */
+.habit-item label {
+  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: color 0.2s;
+  /* Don't let label swallow the click — the <li> handles it */
+  pointer-events: none;
+}
+
+.habit-item.done label {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Delete button — hidden until row is hovered */
+.delete-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  opacity: 0;                      /* invisible by default */
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.habit-item:hover .delete-btn {
+  opacity: 1;                      /* appear on row hover */
+}
+
+.delete-btn:hover {
+  color: var(--fail);
+  background: var(--fail-bg);
+}
+
+/* ── Empty state ────────────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: var(--sp-12) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.empty-icon {
+  font-size: 2rem;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+.empty-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.empty-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 260px;
+  line-height: 1.6;
+}
+
+/* ── Calendar section ───────────────────────────────────────────── */
+.calendar-section {
+  padding-top: var(--sp-8);
+  border-top: 1px solid var(--border);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-5);
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* Legend chips */
+.calendar-legend {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.legend-chip {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+.legend-chip.success-chip { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-dim); }
+.legend-chip.fail-chip    { background: var(--fail-bg);    color: var(--fail);    border: 1px solid #4a1e1e; }
+.legend-chip.empty-chip   { background: var(--surface-2);  color: var(--text-muted); border: 1px solid var(--border); }
+
+/* Calendar grid: 10 columns */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+}
+
+/* Each day cell */
+.day-cell {
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: transform 0.15s;
+  cursor: default;
+}
+
+.day-cell:hover {
+  transform: scale(1.15);
+  z-index: 2;
+}
+
+.day-cell.success {
+  background: var(--success);
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(52, 211, 153, 0.3);
+}
+
+.day-cell.fail {
+  background: #7f3f3f;
+  border-color: transparent;
+}
+
+/* CSS tooltip on hover */
+.day-cell::after {
+  content: attr(data-date);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0a0d14;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  padding: 3px 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 20;
+}
+
+.day-cell:hover::after {
+  opacity: 1;
+}
+
+/* ── Animations ─────────────────────────────────────────────────── */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Responsive: collapse sidebar on mobile ─────────────────────── */
+@media (max-width: 640px) {
+  .page {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: var(--sp-4) var(--sp-5);
+    gap: var(--sp-4);
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand { margin-bottom: 0; }
+
+  /* Push streak + progress to the right */
+  .streak-widget { margin-left: auto; }
+
+  .today-widget {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+
+  .widget-eyebrow { display: none; }
+
+  .progress-bar-track { flex: 1; }
+
+  .main {
+    padding: var(--sp-6) var(--sp-5);
+    max-width: 100%;
+    gap: var(--sp-6);
+  }
+
+  .add-habit-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-primary { width: 100%; text-align: center; }
+}
