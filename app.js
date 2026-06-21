@@ -4,19 +4,7 @@
 // localStorage keys:
 //   "habits"        → [{ name, done }, ...]
 //   "dailyLog"      → { "YYYY-MM-DD": { total, completed }, ... }
-//   "lastActiveDate"→ "YYYY-MM-DD"  ← NEW: tracks which day was last seen
-//
-// Daily reset logic (the fix for this session):
-//   On every page load we compare today's date to lastActiveDate.
-//   If they differ, midnight has passed — we:
-//     1. Write yesterday's final state into dailyLog (preserves history).
-//     2. Reset every habit's done flag to false.
-//     3. Save habits and update lastActiveDate to today.
-//   This happens before any render, so the UI always opens on a clean day.
-// =============================================
-
-
-// ── 1. Grab elements ────────────────────────────────────────────────────────
+//   "lastActiveDate"→ "YYYY-MM-DD"
 
 const habitInput    = document.getElementById('habit-input');
 const addBtn        = document.getElementById('add-btn');
@@ -29,14 +17,8 @@ const progressFill  = document.getElementById('progress-bar-fill');
 const progressLabel = document.getElementById('progress-label');
 const dateDisplay   = document.getElementById('date-display');
 
-
-// ── 2. Load from localStorage ───────────────────────────────────────────────
-
 let habits   = JSON.parse(localStorage.getItem('habits'))   || [];
 let dailyLog = JSON.parse(localStorage.getItem('dailyLog')) || {};
-
-
-// ── 3. Date helpers ─────────────────────────────────────────────────────────
 
 function getTodayKey() {
   const now = new Date();
@@ -51,9 +33,6 @@ function renderDate() {
   dateDisplay.textContent = new Date().toLocaleDateString(undefined, options);
 }
 
-
-// ── 4. Daily reset ──────────────────────────────────────────────────────────
-
 function applyDailyResetIfNeeded() {
   const todayKey       = getTodayKey();
   const lastActiveDate = localStorage.getItem('lastActiveDate');
@@ -63,9 +42,7 @@ function applyDailyResetIfNeeded() {
     return;
   }
 
-  if (lastActiveDate === todayKey) {
-    return;
-  }
+  if (lastActiveDate === todayKey) return;
 
   if (habits.length > 0) {
     const total     = habits.length;
@@ -78,12 +55,8 @@ function applyDailyResetIfNeeded() {
     return { name: habit.name, done: false };
   });
   localStorage.setItem('habits', JSON.stringify(habits));
-
   localStorage.setItem('lastActiveDate', todayKey);
 }
-
-
-// ── 5. Record today's snapshot into dailyLog ────────────────────────────────
 
 function recordToday() {
   const key = getTodayKey();
@@ -100,9 +73,6 @@ function recordToday() {
   localStorage.setItem('dailyLog', JSON.stringify(dailyLog));
 }
 
-
-// ── 6. Sidebar progress bar ─────────────────────────────────────────────────
-
 function updateProgressBar() {
   const total     = habits.length;
   const completed = habits.filter(function(h) { return h.done; }).length;
@@ -114,28 +84,45 @@ function updateProgressBar() {
     : `${completed} of ${total} done`;
 }
 
-
-// ── 7. Streak calculation ────────────────────────────────────────────────────
-
 function calcStreak() {
   let streak = 0;
   const today = new Date();
 
-  for (let i = 0; i < 30; i++) {
+  function keyForOffset(i) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
-    const key = [
+    return [
       d.getFullYear(),
       String(d.getMonth() + 1).padStart(2, '0'),
       String(d.getDate()).padStart(2, '0')
     ].join('-');
+  }
 
-    const entry = dailyLog[key];
-    if (!entry) break;
-    if (entry.completed === entry.total && entry.total > 0) {
-      streak++;
-    } else {
-      break;
+  const todayEntry = dailyLog[keyForOffset(0)];
+  const todayDone  = todayEntry &&
+                     todayEntry.total > 0 &&
+                     todayEntry.completed === todayEntry.total;
+
+  if (todayDone) {
+    streak = 1;
+    for (let i = 1; i < 30; i++) {
+      const entry = dailyLog[keyForOffset(i)];
+      if (!entry) break;
+      if (entry.completed === entry.total && entry.total > 0) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+  } else {
+    for (let i = 1; i < 30; i++) {
+      const entry = dailyLog[keyForOffset(i)];
+      if (!entry) break;
+      if (entry.completed === entry.total && entry.total > 0) {
+        streak++;
+      } else {
+        break;
+      }
     }
   }
 
@@ -145,9 +132,6 @@ function calcStreak() {
 function renderStreak() {
   streakCount.textContent = calcStreak();
 }
-
-
-// ── 8. Calendar grid (30 days) ──────────────────────────────────────────────
 
 function renderCalendar() {
   calendarGrid.innerHTML = '';
@@ -178,9 +162,6 @@ function renderCalendar() {
   }
 }
 
-
-// ── 9. Habit list ───────────────────────────────────────────────────────────
-
 function renderHabits() {
   habitList.innerHTML = '';
 
@@ -200,11 +181,7 @@ function renderHabits() {
     </svg>`;
 
     li.innerHTML = `
-      <input
-        type="checkbox"
-        id="habit-${index}"
-        ${habit.done ? 'checked' : ''}
-      />
+      <input type="checkbox" id="habit-${index}" ${habit.done ? 'checked' : ''} />
       <div class="custom-check">${checkSVG}</div>
       <label for="habit-${index}">${habit.name}</label>
       <button class="delete-btn" data-index="${index}" title="Delete habit">×</button>
@@ -214,15 +191,9 @@ function renderHabits() {
   });
 }
 
-
-// ── 10. Save habits ─────────────────────────────────────────────────────────
-
 function saveHabits() {
   localStorage.setItem('habits', JSON.stringify(habits));
 }
-
-
-// ── 11. Master render ───────────────────────────────────────────────────────
 
 function renderAll() {
   renderHabits();
@@ -231,9 +202,6 @@ function renderAll() {
   renderCalendar();
   renderStreak();
 }
-
-
-// ── 12. Add habit ───────────────────────────────────────────────────────────
 
 addBtn.addEventListener('click', function() {
   const name = habitInput.value.trim();
@@ -249,18 +217,11 @@ addBtn.addEventListener('click', function() {
   habitInput.focus();
 });
 
-
-// ── 13. Enter key shortcut ──────────────────────────────────────────────────
-
 habitInput.addEventListener('keydown', function(event) {
   if (event.key === 'Enter') addBtn.click();
 });
 
-
-// ── 14. Toggle + delete (event delegation) ──────────────────────────────────
-
 habitList.addEventListener('click', function(event) {
-
   if (event.target.classList.contains('delete-btn')) {
     const index = parseInt(event.target.dataset.index);
     habits.splice(index, 1);
@@ -280,9 +241,6 @@ habitList.addEventListener('click', function(event) {
   saveHabits();
   renderAll();
 });
-
-
-// ── 15. Startup sequence ────────────────────────────────────────────────────
 
 applyDailyResetIfNeeded();
 renderDate();
